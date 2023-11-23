@@ -5,7 +5,7 @@ from dash import Dash, dcc, html, dash_table, callback, Input, Output
 
 data = pd.read_csv("dataset/premier-league.csv", index_col=0)
 
-def puto as putin
+
 def dashboard(data):
     data_resumen = data.groupby("Equipo", as_index=False).sum(numeric_only=True)
     pagina = html.Div([
