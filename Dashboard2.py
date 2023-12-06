@@ -31,7 +31,7 @@ def dashboard(data):
         ]),
         dbc.Row([
             dbc.Col(html.P(
-                "Objetivo: Mostrar las estadísticas históricas de los equipos que han jugado en la Premier League"),
+                "Objetivo: Mostrar las estadísticas de tu equipo preferido en una temporada de la Premier League"),
                     width=12)
         ]),
         dbc.Row([
