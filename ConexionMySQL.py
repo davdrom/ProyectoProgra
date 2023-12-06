@@ -59,3 +59,4 @@ for index, fila in data_df.iterrows():
 # Confirma los cambios y cierra la conexión
 conexion.commit()
 conexion.close()
+#e

@@ -36,3 +36,4 @@ class EstadisticasEquipo:
 
     def obtener_estadisticas_resumidas(self):
         return self.estadisticas_df.groupby("equipo", as_index=False).sum(numeric_only=True)
+#e
