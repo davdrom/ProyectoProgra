@@ -1,54 +1,38 @@
+import mysql.connector
+import pandas as pd
+
 class EstadisticasEquipo:
-    def __init__(self, data):
-        self.data = data
 
-    def datos_equipo(self, nombre_equipo):
-        datos_equipo = self.data[self.data['Equipo'] == nombre_equipo]
-        return datos_equipo
+    def __init__(self, base_datos_config):
+        self.base_datos_config = base_datos_config
+        self.estadisticas_df = None
+        self.cargar_estadisticas()
 
-    def max_puntos(self, nombre_equipo):
-        datos_equipo = self.data[self.data['Equipo'] == nombre_equipo]
-        return datos_equipo.loc[datos_equipo['PTS'].idxmax()]
+    def cargar_estadisticas(self):
+        # Cargar estadísticas de todos los equipos desde la base de datos
+        conexion = mysql.connector.connect(**self.base_datos_config)
 
-    def min_puntos(self, nombre_equipo):
-        datos_equipo = self.data[self.data['Equipo'] == nombre_equipo]
-        return datos_equipo.loc[datos_equipo['PTS'].idxmin()]
+        # Obtener datos de la tabla posiciones para todos los equipos
+        consulta = "SELECT * FROM posiciones"
+        self.estadisticas_df = pd.read_sql_query(consulta, conexion)
 
-    def max_goles(self, nombre_equipo):
-        datos_equipo = self.data[self.data['Equipo'] == nombre_equipo]
-        return datos_equipo.loc[datos_equipo['GF'].idxmax()]
+        # Obtener datos de la tabla equipos para el nombre de los equipos
+        consulta_equipos = "SELECT DISTINCT equipo FROM posiciones"
+        equipos_df = pd.read_sql_query(consulta_equipos, conexion)
 
-    def min_goles_temporada(self, nombre_equipo):
-        datos_equipo = self.data[self.data['Equipo'] == nombre_equipo]
-        return datos_equipo.loc[datos_equipo['GF'].idxmin()]
+        # Merge de los datos para asegurar que todos los equipos estén presentes
+        self.estadisticas_df = equipos_df.merge(self.estadisticas_df, on='equipo', how='left')
 
-    def max_goles_contra(self, nombre_equipo):
-        datos_equipo = self.data[self.data['Equipo'] == nombre_equipo]
-        return datos_equipo.loc[datos_equipo['GC'].idxmax()]
+        conexion.close()
 
-    def min_goles_contra(self, nombre_equipo):
-        datos_equipo = self.data[self.data['Equipo'] == nombre_equipo]
-        return datos_equipo.loc[datos_equipo['GC'].idxmin()]
+    def obtener_estadisticas(self):
+        return self.estadisticas_df
 
-    def campeon(self, temporada):
-        datos_temporada = self.data[self.data['Temporada'] == temporada]
-        ganador = datos_temporada.loc[datos_temporada['PTS'].idxmax()]
-        return ganador['Equipo']
+    def obtener_promedio_puntos(self):
+        return self.estadisticas_df['pts'].mean()
 
-    def max_dif_goles(self, nombre_equipo):
-        datos_equipo = self.data[self.data['Equipo'] == nombre_equipo]
-        return datos_equipo.loc[datos_equipo['DF'].idxmax()]
+    def obtener_total_goles_a_favor(self):
+        return self.estadisticas_df['gf'].sum()
 
-    def min_dif_goles(self, nombre_equipo):
-        datos_equipo = self.data[self.data['Equipo'] == nombre_equipo]
-        return datos_equipo.loc[datos_equipo['DF'].idxmin()]
-
-    def promedio_goles(self, nombre_equipo):
-        datos_equipo = self.data[self.data['Equipo'] == nombre_equipo]
-        promedio_goles_anotados = datos_equipo['GF'].mean()
-        return promedio_goles_anotados
-
-    def promedio_goles_en_contra(self, nombre_equipo):
-        datos_temporada = self.data[self.data['Equipo'] == nombre_equipo]
-        promedio_goles_en_contra = datos_temporada['GC'].mean()
-        return promedio_goles_en_contra
+    def obtener_estadisticas_resumidas(self):
+        return self.estadisticas_df.groupby("equipo", as_index=False).sum(numeric_only=True)
